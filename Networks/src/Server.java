@@ -2,7 +2,7 @@ import java.net.*;
 import java.io.*;
 public class Server {
 
-	public static byte[] serialize(Object obj) throws IOException{
+	public static byte[] serialize(OurPacket obj) throws IOException{
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ObjectOutputStream os = new ObjectOutputStream(out);
 		os.writeObject(obj);
@@ -33,14 +33,14 @@ public class Server {
 			
 			OurPacket rcv_packet_class = (OurPacket) deserialize(rcvpckt.getData());
 			
-			InetAddress IPaddr = rcvpckt.getAddress();			
+			InetAddress IPaddr = rcvpckt.getAddress();	
 			int port = rcvpckt.getPort();
 			//String capitalizedword = rcv_packet_class.toUpperCase();
 			
 //			String send = rcv_packet_class.data.toUpperCase();
-			OurPacket send_packet_class = new OurPacket(); //////
+			//OurPacket send_packet_class = new OurPacket(); //////
 //			System.out.println(send);
-			sendata = serialize(send_packet_class);
+			sendata = serialize(rcv_packet_class);
 			
 			DatagramPacket sendpckt = new DatagramPacket(sendata,sendata.length,IPaddr,port);
 			srvrsckt.send(sendpckt);

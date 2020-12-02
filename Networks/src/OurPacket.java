@@ -19,15 +19,15 @@ public class OurPacket implements java.io.Serializable{
 		acknowledgeBits = -1;
 		data = "Test packet";
 	}
-	public OurPacket(int sourcePort, int destinationPort, int lenghOfData,
+	public OurPacket(int sourcePort, int destinationPort, int lengthOfData,
 			int seqNum, String checkSum,int acknowledgeBits, String data){
-		this.sourcePort = sourcePort;
-		this.destinationPort = destinationPort;
-		this.lenghOfData = lenghOfData;
-		this.seqNum = seqNum;
-		this.checksum = checkSum;
-		this.acknowledgeBits = acknowledgeBits;
-		this.data = data;
+		setAcknowledgeBits(acknowledgeBits);
+		setChecksum(checkSum);
+		setData(data);
+		setDestinationPort(destinationPort);
+		setSeqNum(seqNum);
+		setSourcePort(sourcePort);
+		setLenghOfData(lengthOfData);
 	}
 	public void setSourcePort(int sourcePort) {
 			this.sourcePort = sourcePort;
@@ -38,11 +38,11 @@ public class OurPacket implements java.io.Serializable{
 	public void setDestinationPort(int destinationPort) {
 			this.destinationPort = destinationPort;
 	}
-	public int getLenghOfPacket() {
+	public int getLenghOfData() {
 		return lenghOfData;
 	}
-	public void setLenghOfPacket(int lenghOfPacket) {
-		this.lenghOfData = lenghOfPacket;
+	public void setLenghOfData(int lenghOfData) {
+		this.lenghOfData = lenghOfData;
 	}
 	public int getSeqNum() {
 		return seqNum;

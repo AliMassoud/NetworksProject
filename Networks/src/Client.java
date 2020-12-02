@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 public class Client {
 	public static byte[] serialize(OurPacket obj) throws IOException{
@@ -11,6 +12,7 @@ public class Client {
 		os.close();
 		return dt;
 		
+	
 	}
 	
 	public static Object deserialize(byte []data) throws IOException, ClassNotFoundException {
@@ -30,8 +32,13 @@ public class Client {
 		
 		byte[] sendata = new byte[1024];
 		byte[] rcvdata = new byte [1024];
-//		String word = infromusr.readLine();
-		OurPacket send_packet_class = new OurPacket();
+		String data = "";
+		File inputFile = new File("test.txt");
+		Scanner sc = new Scanner(inputFile);
+		while(sc.hasNextLine()) {
+			data += sc.nextLine();
+		}
+		OurPacket send_packet_class = new OurPacket(6789,6789,1024,5,"1011101110",0,data);
 		sendata = serialize(send_packet_class);
 		
 		DatagramPacket sendpckt = new DatagramPacket(sendata,sendata.length,IPaddress,6789);
