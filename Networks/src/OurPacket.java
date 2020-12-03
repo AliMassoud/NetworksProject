@@ -1,34 +1,43 @@
 
 public class OurPacket implements java.io.Serializable {
-	int sourcePort, destinationPort, lenghOfData, acknowledgeBits, seqNum;
+	int sourcePort, destinationPort, lenghOfData, acknowledgeBit, seqNum;
 	final String sourceIP = "";
 	final String destinationIP = "";
 	String checksum;
 	String data;
-	boolean ack = false;
+	boolean LastFrags = false;
+//	boolean ack = false;
 	public int getSourcePort() {
 		return sourcePort;
 	}
 
 	public OurPacket() {
+		LastFrags = false;
 		sourcePort = 0;
 		destinationPort = 0;
 		lenghOfData = 1024;
 		seqNum = 0;
 		checksum = "";
-		acknowledgeBits = -1;
+		acknowledgeBit = -1;
 		data = "Test packet";
 	}
 	
 	public OurPacket(int sourcePort, int destinationPort, int lengthOfData, int seqNum, String checkSum,
-			int acknowledgeBits, String data) {
-		setAcknowledgeBits(acknowledgeBits);
+			int acknowledgeBit, String data) {
+		setAcknowledgeBits(acknowledgeBit);
 		setChecksum(checkSum);
 		setData(data);
 		setDestinationPort(destinationPort);
 		setSeqNum(seqNum);
 		setSourcePort(sourcePort);
 		setLenghOfData(lengthOfData);
+	}
+	
+	public void setLastFrags() {
+		LastFrags = true;
+	}
+	public boolean getLastFrags() {
+		return LastFrags;
 	}
 
 	public void setSourcePort(int sourcePort) {
@@ -68,11 +77,11 @@ public class OurPacket implements java.io.Serializable {
 	}
 
 	public int getAcknowledgeBits() {
-		return acknowledgeBits;
+		return acknowledgeBit;
 	}
 
-	public void setAcknowledgeBits(int acknowledgeBits) {
-		this.acknowledgeBits = acknowledgeBits;
+	public void setAcknowledgeBits(int acknowledgeBit) {
+		this.acknowledgeBit = acknowledgeBit;
 	}
 
 	public String getData() {
@@ -86,8 +95,11 @@ public class OurPacket implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return "OurPacket [sourcePort=" + sourcePort + ", destinationPort=" + destinationPort + ", lenghOfData="
-				+ lenghOfData + ", acknowledgeBits=" + acknowledgeBits + ", seqNum=" + seqNum + ", sourceIP=" + sourceIP
-				+ ", destinationIP=" + destinationIP + ", checksum=" + checksum + ", data=" + data + "]";
+				+ lenghOfData + ", acknowledgeBit=" + acknowledgeBit + ", seqNum=" + seqNum + ", sourceIP=" + sourceIP
+				+ ", destinationIP=" + destinationIP + ", checksum=" + checksum + ", data=" + data + ", LastFrags="
+				+ LastFrags + "]";
 	}
+
+	
 
 }

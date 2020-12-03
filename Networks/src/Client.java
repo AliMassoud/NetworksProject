@@ -33,7 +33,7 @@ public class Client {
 		return b;
 	}
 
-	public static final int MAX_PACKET_DATA_SIZE = 512;
+	public static final int MAX_PACKET_DATA_SIZE = 48;
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
@@ -48,14 +48,16 @@ public class Client {
 		File inputFile = new File("test.txt");
 		Scanner sc = new Scanner(inputFile);
 		String temp = "";
-//		int seqNum = 0;
+		int seqNum = 0;
 		int ack = 0, linepointer = 0;
 
 		boolean fileIsSent = false;
 
 		while (!fileIsSent) {
-
+			//hello!
 			//This is for fragmentation of the file to be sent
+
+			data="";
 			boolean Full = false;
 			while (!Full) {
 				while (linepointer < temp.length()) {
@@ -68,19 +70,23 @@ public class Client {
 					linepointer++;
 				}
 				if (linepointer == temp.length()) {
-					linepointer = 0;
-					if(sc.hasNext())
-						temp = sc.nextLine();
-					else Full = true;
+					if(sc.hasNext()) {
+						linepointer = 0;
+						temp = sc.nextLine();}
+					else {
+						
+						Full = true;
+					}
 				}
 			}
+			linepointer++;
 			//Fragmentation ends
-			
 			//Sending -- no changes
-			OurPacket packet1 = new OurPacket(6789, 6789, 1024, ack, "1011101110", 0, data);
+			OurPacket packet1 = new OurPacket(6789, 6789, 1024, 0, "1011101110", ack, data);
+			System.out.println("GUESS WHAT::  "+linepointer+" ANNDD  "+temp.length());
+			if(!sc.hasNext()&&linepointer>=temp.length()) {packet1.setLastFrags();}
 			sendata = serialize(packet1);
 			DatagramPacket sendpckt = new DatagramPacket(sendata, sendata.length, IPaddress, 6789);
-
 			try {
 				clientsckt.send(sendpckt);
 				clientsckt.setSoTimeout(5000);
@@ -89,20 +95,22 @@ public class Client {
 
 				OurPacket pak_rcv = (OurPacket) deserialize(rcvpckt.getData());
 				System.out.println("From Server " + pak_rcv.toString());
+				System.out.println(pak_rcv.acknowledgeBit+"  :WASSABI ACK should equall "+ ack);
 
-				while (ack != pak_rcv.acknowledgeBits) {// check seqNum in phase four -- checksum for phase 3
+				while (ack != pak_rcv.acknowledgeBit) {// check seqNum in phase four -- checksum for phase 3
 					sendpckt = new DatagramPacket(sendata, sendata.length, IPaddress, 6789);
-
 					clientsckt.send(sendpckt);
-					clientsckt.setSoTimeout(1000);
+					clientsckt.setSoTimeout(5000);
 					rcvpckt = new DatagramPacket(rcvdata, rcvdata.length);
 					clientsckt.receive(rcvpckt);
 					pak_rcv = (OurPacket) deserialize(rcvpckt.getData());
 				}
 //				seqNum++;
 				ack = (ack == 0) ? 1 : 0;
-//				if(seqNum-1 == PacketsReuired)
-//					fileIsSent =true;
+//				if(seqNum-1 == pak_rcv.seqNum)
+//					fileIsSent =false;
+				if(!sc.hasNext()&&linepointer>=temp.length()) {
+					fileIsSent=true;}
 			} catch (Exception e) {
 				System.out.println("Timeout exceeded");
 			}
