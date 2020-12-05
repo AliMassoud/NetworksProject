@@ -1,4 +1,3 @@
-
 public class OurPacket implements java.io.Serializable {
 	int sourcePort, destinationPort, lenghOfData, acknowledgeBit, seqNum;
 	final String sourceIP = "";
@@ -95,15 +94,14 @@ public class OurPacket implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return "OurPacket [sourcePort=" + sourcePort + ", destinationPort=" + destinationPort + ", lenghOfData="
-				+ lenghOfData + ", acknowledgeBit=" + acknowledgeBit + ", checksum=" + checksum + ", data=" + data + ", LastFrags="
+				+ lenghOfData + ", acknowledgeBit=" + acknowledgeBit + ", seqNum=" + seqNum + ", sourceIP=" + sourceIP
+				+ ", destinationIP=" + destinationIP + ", checksum=" + checksum + ", data=" + data + ", LastFrags="
 				+ LastFrags + "]";
 	}
 
-//	
-//	@Override
 //	public String toString() {
-//		return "[ data=" + data + ",]";
+//		return " checksum=" + checksum + ", data=" + data + ", LastFrags="
+//				+ LastFrags + "]";
 //	}
-	
 
 }

@@ -32,7 +32,7 @@ public class Client {
 		in.close();
 		return b;
 	}
-	
+
 	public static String convertStringToBinary(String input) {
 
 		StringBuilder result = new StringBuilder();
@@ -49,14 +49,13 @@ public class Client {
 	public static String toBinary(int num) {
 		String binary = Integer.toBinaryString(num);
 
-		
 		while (binary.length() > 16) {
 			int f = (int) binary.charAt(0);
 			String temp = binary.substring(1);
 			int sum = f + Integer.parseInt(temp, 2);
 			binary = Integer.toBinaryString(sum);
 		}
-		
+
 		while (binary.length() < 16) {
 			binary = '0' + binary;
 		}
@@ -80,7 +79,7 @@ public class Client {
 		while (true) {
 			String t = "";
 			while (ind < data.length()) {
-				
+
 				t += data.charAt(ind);
 				ind++;
 				if (t.length() >= 16)
@@ -136,7 +135,7 @@ public class Client {
 		boolean fileIsSent = false;
 		boolean receivedFile = false;
 		boolean UpdatedAck = true;
-		
+		boolean PacketWasEmpty = false;
 		while (!fileIsSent) {
 			// This is for fragmentation of the file to be sent
 			boolean Full = false;
@@ -160,21 +159,27 @@ public class Client {
 					}
 				}
 			}
-			linepointer++;
+			if (!PacketWasEmpty)
+				linepointer++;
+			PacketWasEmpty = false;
+			
 			// Fragmentation ends
 			// Sending -- no changes
+
 			OurPacket packet1 = new OurPacket(6789, 6789, 1024, 0, "1011101110", ack, data);
-			
+
 			if (!sc.hasNext() && linepointer >= temp.length()) {
 				packet1.setLastFrags();
 			}
 			checksumSender(packet1);
 			sendata = serialize(packet1);
+
 			DatagramPacket sendpckt = new DatagramPacket(sendata, sendata.length, IPaddress, 6789);
-			//System.out.println(packet1.toString());
+			// System.out.println(packet1.toString());
 			try {
 				clientsckt.send(sendpckt);
-				clientsckt.setSoTimeout(1000);
+				// System.out.println(packet1.LastFrags+" HEY IDIOTS2");
+				clientsckt.setSoTimeout(5000);
 				DatagramPacket rcvpckt = new DatagramPacket(rcvdata, rcvdata.length);
 				clientsckt.receive(rcvpckt);
 				OurPacket pak_rcv = (OurPacket) deserialize(rcvpckt.getData());
@@ -187,29 +192,35 @@ public class Client {
 				while (ack == pak_rcv.acknowledgeBit) {// check seqNum in phase four -- checksum for phase 3
 					try {
 						System.out.println("Inner while");
-					sendpckt = new DatagramPacket(sendata, sendata.length, IPaddress, 6789);
-					clientsckt.send(sendpckt);
-					clientsckt.setSoTimeout(1000);
-					rcvpckt = new DatagramPacket(rcvdata, rcvdata.length);
-					clientsckt.receive(rcvpckt);
-					pak_rcv = (OurPacket) deserialize(rcvpckt.getData());
-					}catch (Exception e) {
+						sendpckt = new DatagramPacket(sendata, sendata.length, IPaddress, 6789);
+						clientsckt.send(sendpckt);
+						clientsckt.setSoTimeout(1000);
+						rcvpckt = new DatagramPacket(rcvdata, rcvdata.length);
+						clientsckt.receive(rcvpckt);
+						pak_rcv = (OurPacket) deserialize(rcvpckt.getData());
+						
+
+					} catch (Exception e) {
 						System.out.println("Timeout exceeded two");
 						repeat = true;
+						PacketWasEmpty = true;
 						continue;
 					}
 				}
-				
+
 				System.out.println("From Server " + pak_rcv.toString());
+
 				ack = (ack == 0) ? 1 : 0;
 				repeat = false;
 				data = "";
 				if (!sc.hasNext() && linepointer >= temp.length()) {
+					// System.out.println(packet1.LastFrags+" HEY IDIOTS");
 					fileIsSent = true;
 				}
 			} catch (Exception e) {
 				System.out.println("Timeout exceeded");
 				repeat = true;
+				PacketWasEmpty = true;
 				continue;
 			}
 		}

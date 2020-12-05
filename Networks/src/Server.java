@@ -1,19 +1,20 @@
 import java.net.*;
 import java.io.*;
+
 public class Server {
 
-	public static byte[] serialize(OurPacket obj) throws IOException{
+	public static byte[] serialize(OurPacket obj) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ObjectOutputStream os = new ObjectOutputStream(out);
 		os.writeObject(obj);
-		byte [] dt = out.toByteArray();
+		byte[] dt = out.toByteArray();
 		out.close();
 		os.close();
 		return dt;
-		
+
 	}
-	
-	public static Object deserialize(byte []data) throws IOException, ClassNotFoundException {
+
+	public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream in = new ByteArrayInputStream(data);
 		ObjectInputStream is = new ObjectInputStream(in);
 		Object b = is.readObject();
@@ -21,7 +22,7 @@ public class Server {
 		in.close();
 		return b;
 	}
-	
+
 	public static String convertStringToBinary(String input) {
 
 		StringBuilder result = new StringBuilder();
@@ -38,14 +39,13 @@ public class Server {
 	public static String toBinary(int num) {
 		String binary = Integer.toBinaryString(num);
 
-		
 		while (binary.length() > 16) {
 			int f = (int) binary.charAt(0);
 			String temp = binary.substring(1);
 			int sum = f + Integer.parseInt(temp, 2);
 			binary = Integer.toBinaryString(sum);
 		}
-		
+
 		while (binary.length() < 16) {
 			binary = '0' + binary;
 		}
@@ -92,23 +92,21 @@ public class Server {
 		String data = pckt.getData();
 		data = convertStringToBinary(data);
 
-
 		int sum = src + dest + len;
 		sum = summer(data, sum);
-	
-		String result = toBinary(sum+Integer.parseInt(pckt.getChecksum(), 2));
-		System.out.println(result);
-		
+						
+		String result = toBinary(sum + Integer.parseInt(pckt.getChecksum(), 2));
+		// System.out.println(result);
 
-		
-		
-		for(int i=0; i<result.length(); i++) {
-			if(result.charAt(i)=='0')
+		for (int i = 0; i < result.length(); i++) {
+			if (result.charAt(i) == '0') {
+				
 				return false;
-		}
+			}
+			}
 		return true;
 	}
-	
+
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		DatagramSocket srvrsckt = new DatagramSocket(6789);
@@ -116,41 +114,48 @@ public class Server {
 		byte[] rcvdata = new byte[1024];
 		byte[] sendata = new byte[1024];
 		while (true) {
-			DatagramPacket rcvpckt = new DatagramPacket(rcvdata,rcvdata.length);
+			DatagramPacket rcvpckt = new DatagramPacket(rcvdata, rcvdata.length);
 			srvrsckt.receive(rcvpckt);
-		
-			
+
 			OurPacket rcv_packet = (OurPacket) deserialize(rcvpckt.getData());
-			//manually corrupting data
-	//			rcv_packet.data="LORENJSDBAFIOHDBHBIOFBDABD";
-			
-	//	if (checksumReceiver(rcv_packet)) 
-	//			System.out.println("The packet is not corrupted");
-	//		else
-	//			System.out.println("The packet is corrupted");
-			
+			// manually corrupting data
+			// rcv_packet.data="LORENJSDBAFIOHDBHBIOFBDABD";
+
+//		if (checksumReceiver(rcv_packet)) 
+//				System.out.println("The packet is not corrupted");
+//			else
+//				System.out.println("The packet is corrupted");
+
 //			System.out.println(rcv_packet.toString());
-			
-			if(Expected_Ack != rcv_packet.acknowledgeBit || !checksumReceiver(rcv_packet)) {
+			boolean islast = rcv_packet.LastFrags;
+			if (Expected_Ack != rcv_packet.acknowledgeBit || !checksumReceiver(rcv_packet)) {
 //				System.out.println("not expected Ack " + "the expected ack = "+Expected_Ack);
-				rcv_packet = new OurPacket(rcv_packet.destinationPort,rcv_packet.sourcePort,000,000, rcv_packet.checksum, Expected_Ack, rcv_packet.data);
-				if(Expected_Ack != rcv_packet.acknowledgeBit) System.out.println("Recieved From Client: "+ rcv_packet.toString()+" DUP!");
-				else {System.out.println("Recieved From Client: "+ rcv_packet.toString()+" Corrupted");}
-			}
-			else {
+
+				rcv_packet = new OurPacket(rcv_packet.destinationPort, rcv_packet.sourcePort, 000, 000,
+						rcv_packet.checksum, Expected_Ack, rcv_packet.data);
+				if (islast)
+					rcv_packet.setLastFrags();
+				if (Expected_Ack != rcv_packet.acknowledgeBit)
+					System.out.println("Recieved From Client: " + rcv_packet.toString() + " DUP!");
+				else if (!checksumReceiver(rcv_packet)) {
+					System.out.println("Recieved From Client: " + rcv_packet.toString() + "CORRUPTED");
+				} 
+			} else {
 //				System.out.println("in the else");
-				Expected_Ack = (Expected_Ack==0)?1:0;
-				rcv_packet = new OurPacket(rcv_packet.destinationPort,rcv_packet.sourcePort,000,000, rcv_packet.checksum, Expected_Ack, rcv_packet.data);
-				System.out.println("Recieved From Client: "+ rcv_packet.toString());
+				Expected_Ack = (Expected_Ack == 0) ? 1 : 0;
+				rcv_packet = new OurPacket(rcv_packet.destinationPort, rcv_packet.sourcePort, 000, 000,
+						rcv_packet.checksum, Expected_Ack, rcv_packet.data);
+				if (islast)
+					rcv_packet.setLastFrags();
+				System.out.println("Recieved From Client: " + rcv_packet.toString() + "ALL GOOD");
 
 			}
 			
-			
-			
-			InetAddress IPaddr = rcvpckt.getAddress();	
+
+			InetAddress IPaddr = rcvpckt.getAddress();
 			int port = rcvpckt.getPort();
 			sendata = serialize(rcv_packet);
-			DatagramPacket sendpckt = new DatagramPacket(sendata,sendata.length,IPaddr,port);
+			DatagramPacket sendpckt = new DatagramPacket(sendata, sendata.length, IPaddr, port);
 			srvrsckt.send(sendpckt);
 		}
 	}
